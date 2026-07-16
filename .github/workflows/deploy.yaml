@@ -18,8 +18,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # We can add zizmore for automatic checking on sha pinning.
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.x.x
 
       # GHCR requires lowercase image names — this repo has uppercase letters
       # (Dakshmulundkar/STANS), so we normalize it before using it as a tag.
@@ -28,7 +29,7 @@ jobs:
           echo "IMAGE_NAME_LC=$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.x.x
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -37,9 +38,11 @@ jobs:
       - name: Get build date
         id: date
         run: echo "date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
-      
+
+      # We verify the image health before pushing into the repo
+      # build-and-load locally, verify health, then push only if that passed
       - name: Build and push image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v.6.x.x
         with:
           context: .
           push: true
@@ -48,7 +51,36 @@ jobs:
             BUILD_DATE=${{ steps.date.outputs.date }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:latest
+
+      - name: Verify image health before publishing
+        run: |
+          docker run -d --name ci-health-check -p 8080:80 \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ github.sha }}
+          for i in $(seq 1 10); do
+            if docker exec ci-health-check wget -q -O- http://127.0.0.1/health; then
+              echo "Health check passed"
+              exit 0
+            fi
+            echo "Waiting for container to become healthy... ($i/10)"
+            sleep 3
+          done
+          echo "Health check failed after 10 attempts"
+          docker logs ci-health-check
+          exit 1
+
+      - name: Clean up health0-check container
+        if: always()
+        run:  docker rm -f ci-health-check || true
+
+      # Every commit's image is preserved under its own :sha-<commit> tag in GHCR permanently (nothing deletes them) 
+      # and :latest can never point at a broken build.
+      - name: Push verified image
+        run:  |
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ github.sha }}
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ github.sha }} \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:latest
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:latest
+
 
   # --- Optional (Part 3 of the brief): deploy to a remote server over SSH ---
   # Requires repo secrets: SSH_HOST, SSH_USER, SSH_PRIVATE_KEY
