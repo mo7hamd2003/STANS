@@ -1,0 +1,31 @@
+# Version Control
+.git
+.gitignore
+
+# Dependencies (Installed locally, should be fresh inside the container)
+node_modules/
+vendor/
+.pnpm-store/
+
+# Build outputs and IDE configurations
+dist/
+build/
+.next/
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Secrets and Logs
+.env
+.env.*
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Docker files themselves
+Dockerfile
+docker-compose.yml
+.dockerignore
