@@ -140,10 +140,10 @@ const GraphBuilder = ({ nodes, edges, setNodes, setEdges }: GraphBuilderProps) =
     const svgX = viewBoxX + (clickX / rect.width) * scaledWidth;
     const svgY = viewBoxY + (clickY / rect.height) * scaledHeight;
 
-    const nodeId = nodes.length < 26 
-      ? String.fromCharCode(65 + nodes.length) 
+    const nodeId = nodes.length < 26
+      ? String.fromCharCode(65 + nodes.length)
       : `N${nodes.length + 1}`;
-    
+
     const newNode: Node = {
       id: nodeId,
       x: svgX,
@@ -168,14 +168,14 @@ const GraphBuilder = ({ nodes, edges, setNodes, setEdges }: GraphBuilderProps) =
 
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
     if (!isPanning) return;
-    
+
     const svg = svgRef.current;
     if (!svg) return;
-    
+
     const rect = svg.getBoundingClientRect();
     const dx = (e.clientX - panStart.x) * (scaledWidth / rect.width);
     const dy = (e.clientY - panStart.y) * (scaledHeight / rect.height);
-    
+
     setPanOffset(prev => ({
       x: prev.x - dx,
       y: prev.y - dy,
@@ -205,8 +205,8 @@ const GraphBuilder = ({ nodes, edges, setNodes, setEdges }: GraphBuilderProps) =
 
   const saveNodeEdit = () => {
     if (!editingNodeId || !editingNodeLabel.trim()) return;
-    
-    const updatedNodes = nodes.map(n => 
+
+    const updatedNodes = nodes.map(n =>
       n.id === editingNodeId ? { ...n, label: editingNodeLabel.trim() } : n
     );
     setNodes(updatedNodes);
@@ -236,16 +236,16 @@ const GraphBuilder = ({ nodes, edges, setNodes, setEdges }: GraphBuilderProps) =
 
   const handleNodeDrag = (e: React.MouseEvent<SVGSVGElement>) => {
     if (!draggingNodeId) return;
-    
+
     const svg = svgRef.current;
     if (!svg) return;
-    
+
     const rect = svg.getBoundingClientRect();
     const dx = (e.clientX - dragStart.x) * (scaledWidth / rect.width);
     const dy = (e.clientY - dragStart.y) * (scaledHeight / rect.height);
-    
-    const updatedNodes = nodes.map(n => 
-      n.id === draggingNodeId 
+
+    const updatedNodes = nodes.map(n =>
+      n.id === draggingNodeId
         ? { ...n, x: n.x + dx, y: n.y + dy }
         : n
     );
@@ -337,7 +337,7 @@ const GraphBuilder = ({ nodes, edges, setNodes, setEdges }: GraphBuilderProps) =
   const saveEdgeEdit = () => {
     if (!selectedEdgeKey) return;
     const [from, to] = selectedEdgeKey.split("-");
-    
+
     const updatedEdges = edges.map((e) =>
       e.from === from && e.to === to
         ? {
@@ -348,7 +348,7 @@ const GraphBuilder = ({ nodes, edges, setNodes, setEdges }: GraphBuilderProps) =
           }
         : e
     );
-    
+
     setEdges(updatedEdges);
     saveToHistory(`Updated edge ${from}-${to}`, nodes, updatedEdges);
     toast.success(`Edge ${from}-${to} updated`);
@@ -437,17 +437,17 @@ const GraphBuilder = ({ nodes, edges, setNodes, setEdges }: GraphBuilderProps) =
                   Export
                 </Button>
                 <div className="ml-auto flex gap-2">
-                  <Button 
-                    onClick={handleUndo} 
-                    variant="outline" 
+                  <Button
+                    onClick={handleUndo}
+                    variant="outline"
                     disabled={currentHistoryIndex <= 0}
                     size="icon"
                   >
                     <Undo2 className="w-4 h-4" />
                   </Button>
-                  <Button 
-                    onClick={handleRedo} 
-                    variant="outline" 
+                  <Button
+                    onClick={handleRedo}
+                    variant="outline"
                     disabled={currentHistoryIndex >= history.length - 1}
                     size="icon"
                   >
@@ -474,7 +474,7 @@ const GraphBuilder = ({ nodes, edges, setNodes, setEdges }: GraphBuilderProps) =
                   </div>
                   <div className="space-y-2" id="traffic-level-slider">
                     <Label htmlFor="traffic">Traffic Level</Label>
-                    <Select value={edgeTraffic} onValueChange={(v: any) => setEdgeTraffic(v)}>
+                    <Select value={edgeTraffic} onValueChange={(v: string) => setEdgeTraffic(v)}>
                       <SelectTrigger id="traffic">
                         <SelectValue />
                       </SelectTrigger>
@@ -682,7 +682,7 @@ const GraphBuilder = ({ nodes, edges, setNodes, setEdges }: GraphBuilderProps) =
                 const smallFontSize = 10 * (100 / zoom);
                 const buttonRadius = 10 * (100 / zoom);
                 const labelOffset = 35 * (100 / zoom);
-                
+
                 return (
                   <g key={node.id}>
                     <circle
@@ -829,7 +829,7 @@ const GraphBuilder = ({ nodes, edges, setNodes, setEdges }: GraphBuilderProps) =
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="editTraffic">Traffic Level</Label>
-                    <Select value={editingEdgeTraffic} onValueChange={(v: any) => setEditingEdgeTraffic(v)}>
+                    <Select value={editingEdgeTraffic} onValueChange={(v: string) => setEditingEdgeTraffic(v)}>
                       <SelectTrigger id="editTraffic">
                         <SelectValue />
                       </SelectTrigger>

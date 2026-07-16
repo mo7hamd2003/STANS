@@ -1,14 +1,31 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { kruskalAlgorithm } from "@/utils/kruskal";
+import { kruskalAlgorithm, type Edge } from "@/utils/kruskal";
 import { primAlgorithm } from "@/utils/prim";
 import { dijkstraAlgorithm } from "@/utils/dijkstra";
 import { Play, BarChart3, TrendingUp, Clock } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+} from "recharts";
 
 interface BenchmarkResult {
   graphSize: number;
@@ -37,21 +54,24 @@ const PerformanceBenchmark = () => {
       nodes.push(`N${i}`);
     }
 
-    const edges: any[] = [];
-    const edgeCount = Math.min(nodeCount * (nodeCount - 1) / 2, nodeCount * 3);
-    
+    const edges: Edge[] = [];
+    const edgeCount = Math.min(
+      (nodeCount * (nodeCount - 1)) / 2,
+      nodeCount * 3,
+    );
+
     for (let i = 0; i < edgeCount; i++) {
       const from = nodes[Math.floor(Math.random() * nodes.length)];
       let to = nodes[Math.floor(Math.random() * nodes.length)];
       while (to === from) {
         to = nodes[Math.floor(Math.random() * nodes.length)];
       }
-      
+
       edges.push({
         from,
         to,
         weight: Math.floor(Math.random() * 50) + 10,
-        traffic: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
+        traffic: ["low", "medium", "high"][Math.floor(Math.random() * 3)],
         isBlocked: false,
       });
     }
@@ -90,10 +110,12 @@ const PerformanceBenchmark = () => {
         const pTime = measureTime(() => primAlgorithm(edges, nodes));
         primTimes.push(pTime);
 
-        const dTime = measureTime(() => dijkstraAlgorithm(edges, nodes, nodes[0]));
+        const dTime = measureTime(() =>
+          dijkstraAlgorithm(edges, nodes, nodes[0]),
+        );
         dijkstraTimes.push(dTime);
 
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise((resolve) => setTimeout(resolve, 10));
       }
 
       newResults.push({
@@ -117,22 +139,27 @@ const PerformanceBenchmark = () => {
     const median = sorted[Math.floor(sorted.length / 2)];
     const min = sorted[0];
     const max = sorted[sorted.length - 1];
-    const variance = data.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / data.length;
+    const variance =
+      data.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / data.length;
     const stdDev = Math.sqrt(variance);
 
     return { mean, median, min, max, stdDev };
   };
 
-  const getAlgorithmStats = (algorithm: 'kruskal' | 'prim' | 'dijkstra'): Stats => {
-    const times = results.map(r => 
-      algorithm === 'kruskal' ? r.kruskalTime : 
-      algorithm === 'prim' ? r.primTime : 
-      r.dijkstraTime
+  const getAlgorithmStats = (
+    algorithm: "kruskal" | "prim" | "dijkstra",
+  ): Stats => {
+    const times = results.map((r) =>
+      algorithm === "kruskal"
+        ? r.kruskalTime
+        : algorithm === "prim"
+          ? r.primTime
+          : r.dijkstraTime,
     );
     return calculateStats(times);
   };
 
-  const comparisonData = results.map(r => ({
+  const comparisonData = results.map((r) => ({
     size: `${r.graphSize} nodes`,
     Kruskal: parseFloat(r.kruskalTime.toFixed(3)),
     Prim: parseFloat(r.primTime.toFixed(3)),
@@ -150,7 +177,8 @@ const PerformanceBenchmark = () => {
                 Performance Benchmark Suite
               </CardTitle>
               <CardDescription>
-                Measure and compare algorithm execution times across different graph sizes
+                Measure and compare algorithm execution times across different
+                graph sizes
               </CardDescription>
             </div>
             <Button onClick={runBenchmark} disabled={isRunning} size="lg">
@@ -162,7 +190,9 @@ const PerformanceBenchmark = () => {
         <CardContent>
           {isRunning && (
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Running benchmark tests...</p>
+              <p className="text-sm text-muted-foreground">
+                Running benchmark tests...
+              </p>
               <Progress value={progress} />
             </div>
           )}
@@ -181,19 +211,42 @@ const PerformanceBenchmark = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Execution Time vs Graph Size</CardTitle>
-                <CardDescription>Average execution time in milliseconds</CardDescription>
+                <CardDescription>
+                  Average execution time in milliseconds
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={400}>
                   <LineChart data={comparisonData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="size" />
-                    <YAxis label={{ value: 'Time (ms)', angle: -90, position: 'insideLeft' }} />
+                    <YAxis
+                      label={{
+                        value: "Time (ms)",
+                        angle: -90,
+                        position: "insideLeft",
+                      }}
+                    />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="Kruskal" stroke="hsl(var(--primary))" strokeWidth={2} />
-                    <Line type="monotone" dataKey="Prim" stroke="hsl(var(--secondary))" strokeWidth={2} />
-                    <Line type="monotone" dataKey="Dijkstra" stroke="hsl(var(--accent))" strokeWidth={2} />
+                    <Line
+                      type="monotone"
+                      dataKey="Kruskal"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="Prim"
+                      stroke="hsl(var(--secondary))"
+                      strokeWidth={2}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="Dijkstra"
+                      stroke="hsl(var(--accent))"
+                      strokeWidth={2}
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -204,14 +257,22 @@ const PerformanceBenchmark = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Algorithm Comparison</CardTitle>
-                <CardDescription>Side-by-side performance comparison</CardDescription>
+                <CardDescription>
+                  Side-by-side performance comparison
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={400}>
                   <BarChart data={comparisonData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="size" />
-                    <YAxis label={{ value: 'Time (ms)', angle: -90, position: 'insideLeft' }} />
+                    <YAxis
+                      label={{
+                        value: "Time (ms)",
+                        angle: -90,
+                        position: "insideLeft",
+                      }}
+                    />
                     <Tooltip />
                     <Legend />
                     <Bar dataKey="Kruskal" fill="hsl(var(--primary))" />
@@ -225,39 +286,57 @@ const PerformanceBenchmark = () => {
 
           <TabsContent value="stats" className="space-y-4">
             <div className="grid md:grid-cols-3 gap-4">
-              {(['kruskal', 'prim', 'dijkstra'] as const).map((algo) => {
+              {(["kruskal", "prim", "dijkstra"] as const).map((algo) => {
                 const stats = getAlgorithmStats(algo);
                 return (
                   <Card key={algo}>
                     <CardHeader>
-                      <CardTitle className="capitalize">{algo}'s Algorithm</CardTitle>
+                      <CardTitle className="capitalize">
+                        {algo}'s Algorithm
+                      </CardTitle>
                       <CardDescription>Statistical Analysis</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Mean</span>
+                        <span className="text-sm text-muted-foreground">
+                          Mean
+                        </span>
                         <Badge variant="outline">
                           <Clock className="w-3 h-3 mr-1" />
                           {stats.mean.toFixed(3)} ms
                         </Badge>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Median</span>
-                        <Badge variant="outline">{stats.median.toFixed(3)} ms</Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Min</span>
-                        <Badge variant="secondary">{stats.min.toFixed(3)} ms</Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Max</span>
-                        <Badge variant="secondary">{stats.max.toFixed(3)} ms</Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Std Dev</span>
+                        <span className="text-sm text-muted-foreground">
+                          Median
+                        </span>
                         <Badge variant="outline">
-                          <TrendingUp className="w-3 h-3 mr-1" />
-                          ±{stats.stdDev.toFixed(3)} ms
+                          {stats.median.toFixed(3)} ms
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">
+                          Min
+                        </span>
+                        <Badge variant="secondary">
+                          {stats.min.toFixed(3)} ms
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">
+                          Max
+                        </span>
+                        <Badge variant="secondary">
+                          {stats.max.toFixed(3)} ms
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">
+                          Std Dev
+                        </span>
+                        <Badge variant="outline">
+                          <TrendingUp className="w-3 h-3 mr-1" />±
+                          {stats.stdDev.toFixed(3)} ms
                         </Badge>
                       </div>
                     </CardContent>
@@ -287,9 +366,15 @@ const PerformanceBenchmark = () => {
                         <tr key={idx} className="border-b">
                           <td className="p-2">{result.graphSize} nodes</td>
                           <td className="p-2">{result.edges}</td>
-                          <td className="text-right p-2">{result.kruskalTime.toFixed(3)}</td>
-                          <td className="text-right p-2">{result.primTime.toFixed(3)}</td>
-                          <td className="text-right p-2">{result.dijkstraTime.toFixed(3)}</td>
+                          <td className="text-right p-2">
+                            {result.kruskalTime.toFixed(3)}
+                          </td>
+                          <td className="text-right p-2">
+                            {result.primTime.toFixed(3)}
+                          </td>
+                          <td className="text-right p-2">
+                            {result.dijkstraTime.toFixed(3)}
+                          </td>
                         </tr>
                       ))}
                     </tbody>

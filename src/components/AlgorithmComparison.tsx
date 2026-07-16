@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play, RefreshCw } from "lucide-react";
@@ -15,16 +21,32 @@ interface Node {
   label: string;
 }
 
+interface AlgorithmResult {
+  steps: number;
+  edges?: number;
+  weight?: number;
+  distance?: string;
+  path?: string;
+  time: string;
+}
+
 interface AlgorithmComparisonProps {
   nodes?: Node[];
   edges?: Edge[];
 }
 
-const AlgorithmComparison = ({ nodes: propNodes, edges: propEdges }: AlgorithmComparisonProps) => {
+const AlgorithmComparison = ({
+  nodes: propNodes,
+  edges: propEdges,
+}: AlgorithmComparisonProps) => {
   const [hasRun, setHasRun] = useState(false);
-  const [kruskalResult, setKruskalResult] = useState<any>(null);
-  const [primResult, setPrimResult] = useState<any>(null);
-  const [dijkstraResult, setDijkstraResult] = useState<any>(null);
+  const [kruskalResult, setKruskalResult] = useState<AlgorithmResult | null>(
+    null,
+  );
+  const [primResult, setPrimResult] = useState<AlgorithmResult | null>(null);
+  const [dijkstraResult, setDijkstraResult] = useState<AlgorithmResult | null>(
+    null,
+  );
 
   // Use provided nodes/edges or fallback to sample data
   const defaultNodes: Node[] = [
@@ -52,7 +74,10 @@ const AlgorithmComparison = ({ nodes: propNodes, edges: propEdges }: AlgorithmCo
     toast.info("Running all algorithms...");
 
     // Run Kruskal's
-    const kruskalSteps = kruskalAlgorithm(edges, nodes.map((n) => n.id));
+    const kruskalSteps = kruskalAlgorithm(
+      edges,
+      nodes.map((n) => n.id),
+    );
     const kruskalFinal = kruskalSteps[kruskalSteps.length - 1];
     setKruskalResult({
       steps: kruskalSteps.length,
@@ -62,7 +87,11 @@ const AlgorithmComparison = ({ nodes: propNodes, edges: propEdges }: AlgorithmCo
     });
 
     // Run Prim's
-    const primSteps = primAlgorithm(edges, nodes.map((n) => n.id), "A");
+    const primSteps = primAlgorithm(
+      edges,
+      nodes.map((n) => n.id),
+      "A",
+    );
     const primFinal = primSteps[primSteps.length - 1];
     setPrimResult({
       steps: primSteps.length,
@@ -72,7 +101,12 @@ const AlgorithmComparison = ({ nodes: propNodes, edges: propEdges }: AlgorithmCo
     });
 
     // Run Dijkstra's (A to C)
-    const dijkstraSteps = dijkstraAlgorithm(edges, nodes.map((n) => n.id), "A", "C");
+    const dijkstraSteps = dijkstraAlgorithm(
+      edges,
+      nodes.map((n) => n.id),
+      "A",
+      "C",
+    );
     const dijkstraFinal = dijkstraSteps[dijkstraSteps.length - 1];
     setDijkstraResult({
       steps: dijkstraSteps.length,
@@ -103,7 +137,8 @@ const AlgorithmComparison = ({ nodes: propNodes, edges: propEdges }: AlgorithmCo
         <CardHeader>
           <CardTitle className="font-display">Algorithm Comparison</CardTitle>
           <CardDescription>
-            Side-by-side comparison of Kruskal's, Prim's, and Dijkstra's algorithms
+            Side-by-side comparison of Kruskal's, Prim's, and Dijkstra's
+            algorithms
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -197,27 +232,39 @@ const AlgorithmComparison = ({ nodes: propNodes, edges: propEdges }: AlgorithmCo
               {/* Kruskal's Results */}
               <Card className="border-2 border-accent/50 bg-accent/5">
                 <CardHeader>
-                  <CardTitle className="text-lg font-display">Kruskal's Algorithm</CardTitle>
-                  <CardDescription>Minimum Spanning Tree (Edge-based)</CardDescription>
+                  <CardTitle className="text-lg font-display">
+                    Kruskal's Algorithm
+                  </CardTitle>
+                  <CardDescription>
+                    Minimum Spanning Tree (Edge-based)
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Steps Taken:</span>
+                      <span className="text-muted-foreground">
+                        Steps Taken:
+                      </span>
                       <Badge variant="secondary">{kruskalResult?.steps}</Badge>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Edges in MST:</span>
+                      <span className="text-muted-foreground">
+                        Edges in MST:
+                      </span>
                       <Badge variant="secondary">{kruskalResult?.edges}</Badge>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Total Weight:</span>
+                      <span className="text-muted-foreground">
+                        Total Weight:
+                      </span>
                       <Badge className="bg-accent text-accent-foreground">
                         {kruskalResult?.weight}km
                       </Badge>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Time Complexity:</span>
+                      <span className="text-muted-foreground">
+                        Time Complexity:
+                      </span>
                       <code className="text-xs bg-muted px-2 py-1 rounded">
                         {kruskalResult?.time}
                       </code>
@@ -232,34 +279,47 @@ const AlgorithmComparison = ({ nodes: propNodes, edges: propEdges }: AlgorithmCo
               {/* Prim's Results */}
               <Card className="border-2 border-secondary/50 bg-secondary/5">
                 <CardHeader>
-                  <CardTitle className="text-lg font-display">Prim's Algorithm</CardTitle>
-                  <CardDescription>Minimum Spanning Tree (Node-based)</CardDescription>
+                  <CardTitle className="text-lg font-display">
+                    Prim's Algorithm
+                  </CardTitle>
+                  <CardDescription>
+                    Minimum Spanning Tree (Node-based)
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Steps Taken:</span>
+                      <span className="text-muted-foreground">
+                        Steps Taken:
+                      </span>
                       <Badge variant="secondary">{primResult?.steps}</Badge>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Edges in MST:</span>
+                      <span className="text-muted-foreground">
+                        Edges in MST:
+                      </span>
                       <Badge variant="secondary">{primResult?.edges}</Badge>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Total Weight:</span>
+                      <span className="text-muted-foreground">
+                        Total Weight:
+                      </span>
                       <Badge className="bg-secondary text-secondary-foreground">
                         {primResult?.weight}km
                       </Badge>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Time Complexity:</span>
+                      <span className="text-muted-foreground">
+                        Time Complexity:
+                      </span>
                       <code className="text-xs bg-muted px-2 py-1 rounded">
                         {primResult?.time}
                       </code>
                     </div>
                   </div>
                   <div className="pt-3 border-t border-border/50 text-xs text-muted-foreground">
-                    <strong>Best for:</strong> Dense graphs, growing tree from source
+                    <strong>Best for:</strong> Dense graphs, growing tree from
+                    source
                   </div>
                 </CardContent>
               </Card>
@@ -267,13 +327,17 @@ const AlgorithmComparison = ({ nodes: propNodes, edges: propEdges }: AlgorithmCo
               {/* Dijkstra's Results */}
               <Card className="border-2 border-primary/50 bg-primary/5">
                 <CardHeader>
-                  <CardTitle className="text-lg font-display">Dijkstra's Algorithm</CardTitle>
+                  <CardTitle className="text-lg font-display">
+                    Dijkstra's Algorithm
+                  </CardTitle>
                   <CardDescription>Shortest Path (A → C)</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Steps Taken:</span>
+                      <span className="text-muted-foreground">
+                        Steps Taken:
+                      </span>
                       <Badge variant="secondary">{dijkstraResult?.steps}</Badge>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -289,7 +353,9 @@ const AlgorithmComparison = ({ nodes: propNodes, edges: propEdges }: AlgorithmCo
                       </Badge>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Time Complexity:</span>
+                      <span className="text-muted-foreground">
+                        Time Complexity:
+                      </span>
                       <code className="text-xs bg-muted px-2 py-1 rounded">
                         {dijkstraResult?.time}
                       </code>
@@ -307,12 +373,16 @@ const AlgorithmComparison = ({ nodes: propNodes, edges: propEdges }: AlgorithmCo
           {hasRun && (
             <Card className="bg-muted/30 border-2">
               <CardHeader>
-                <CardTitle className="text-lg font-display">Key Differences</CardTitle>
+                <CardTitle className="text-lg font-display">
+                  Key Differences
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid sm:grid-cols-3 gap-4 text-sm">
                   <div>
-                    <h4 className="font-semibold mb-2 text-accent">Kruskal's</h4>
+                    <h4 className="font-semibold mb-2 text-accent">
+                      Kruskal's
+                    </h4>
                     <ul className="space-y-1 text-muted-foreground">
                       <li>• Sorts all edges first</li>
                       <li>• Uses Union-Find</li>
@@ -321,7 +391,9 @@ const AlgorithmComparison = ({ nodes: propNodes, edges: propEdges }: AlgorithmCo
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-2 text-secondary">Prim's</h4>
+                    <h4 className="font-semibold mb-2 text-secondary">
+                      Prim's
+                    </h4>
                     <ul className="space-y-1 text-muted-foreground">
                       <li>• Grows tree from start node</li>
                       <li>• Uses priority queue</li>
@@ -330,7 +402,9 @@ const AlgorithmComparison = ({ nodes: propNodes, edges: propEdges }: AlgorithmCo
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-2 text-primary">Dijkstra's</h4>
+                    <h4 className="font-semibold mb-2 text-primary">
+                      Dijkstra's
+                    </h4>
                     <ul className="space-y-1 text-muted-foreground">
                       <li>• Finds shortest paths</li>
                       <li>• Single source to all nodes</li>
