@@ -36,14 +36,14 @@ jobs:
 
       - name: Get build date
         id: date
-        run: echo "date=$(date -u + '%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
+        run: echo "date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
       
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          build_args: |
+          build-args: |
             REVISION=${{ github.sha }}
             BUILD_DATE=${{ steps.date.outputs.date }}
           tags: |
