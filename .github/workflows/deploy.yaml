@@ -53,6 +53,14 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ github.sha }}
 
+      # - name: Run Trivy image scan
+      #   uses: aquasecurity/trivy-action@0.28.0
+      #   with:
+      #     image-ref: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ github.sha }}'
+      #     severity: 'CRITICAL,HIGH'
+      #     exit-code: '1'
+      #     format: 'table'
+      
       - name: Verify image health before publishing
         run: |
           docker run -d --name ci-health-check -p 8080:80 \
@@ -68,7 +76,7 @@ jobs:
           echo "Health check failed after 10 attempts"
           docker logs ci-health-check
           exit 1
-
+          
       - name: Clean up health-check container
         if: always()
         run:  docker rm -f ci-health-check || true
