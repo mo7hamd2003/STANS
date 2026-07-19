@@ -54,12 +54,13 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ github.sha }}
 
       # - name: Run Trivy image scan
-      #   uses: aquasecurity/trivy-action@0.28.0
+      #   uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
       #   with:
       #     image-ref: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ github.sha }}'
       #     severity: 'CRITICAL,HIGH'
       #     exit-code: '1'
       #     format: 'table'
+      #     trivy-version: 'v0.68.2'
       
       - name: Verify image health before publishing
         run: |
