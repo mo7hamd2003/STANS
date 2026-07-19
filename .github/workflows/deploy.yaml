@@ -1,3 +1,4 @@
+# I should fix the deployment issue. There's an issue in this file that breaks before even calling the verification action.
 name: Deploy
 
 on:
@@ -45,12 +46,12 @@ jobs:
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v.6.x.x
         with:
           context: .
-          push: true
+          load: true
           build-args: |
             REVISION=${{ github.sha }}
             BUILD_DATE=${{ steps.date.outputs.date }}
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ github.sha }}
 
       - name: Verify image health before publishing
         run: |
@@ -68,11 +69,11 @@ jobs:
           docker logs ci-health-check
           exit 1
 
-      - name: Clean up health0-check container
+      - name: Clean up health-check container
         if: always()
         run:  docker rm -f ci-health-check || true
 
-      # Every commit's image is preserved under its own :sha-<commit> tag in GHCR permanently (nothing deletes them) 
+      # Every commit's image is preserved under its own :sha-<commit> tag in GHCR permanently (nothing deletes them)
       # and :latest can never point at a broken build.
       - name: Push verified image
         run:  |
