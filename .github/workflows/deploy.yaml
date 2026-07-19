@@ -21,7 +21,7 @@ jobs:
     steps:
       # We can add zizmore for automatic checking on sha pinning.
       - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.x.x
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v7.x.x
 
       # GHCR requires lowercase image names — this repo has uppercase letters
       # (Dakshmulundkar/STANS), so we normalize it before using it as a tag.
