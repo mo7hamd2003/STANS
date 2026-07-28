@@ -1,61 +1,67 @@
-# Smart Traffic-Aware Navigation System (STANS)
+# STANS — DevSecOps Pipeline
 
-A map guidance system that helps individuals and businesses navigate efficiently by calculating optimal routes based on traffic conditions, blockades, and distance.
+[![CI](https://img.shields.io/github/actions/workflow/status/mo7hamd2003/STANS/ci.yml?branch=main&label=CI)](https://github.com/mo7hamd2003/STANS/actions/workflows/ci.yml)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/mo7hamd2003/STANS/deploy.yml?branch=main&label=Deploy)](https://github.com/mo7hamd2003/STANS/actions/workflows/deploy.yml)
+[![CodeQL](https://img.shields.io/github/actions/workflow/status/mo7hamd2003/STANS/codeql.yml?branch=main&label=CodeQL)](https://github.com/mo7hamd2003/STANS/actions/workflows/codeql.yml)
 
-## Project Overview
+This repo is a DevSecOps hardening exercise, built around the [roadmap.sh STANS project](https://roadmap.sh/projects/stans-navigation-deployment): containerizing a React/TypeScript app and shipping it through a hardened, security-scanned CI/CD pipeline.
 
-This system develops a map guidance platform utilizing **Kruskal's algorithm** to compute the minimum spanning tree of a weighted directed graph. Graph weights are determined by distance, traffic intensity, and blockades, providing users with optimal routes they wouldn't know about ahead of time.
+See [`DEPLOYMENT.md`](./DEPLOYMENT.md) for the full pipeline writeup.
 
-## Features
+## Status
 
-- **Graph Visualization**: Interactive 2D and 3D graph visualization with traffic-aware coloring
-- **Algorithm Comparison**: Side-by-side comparison of Kruskal's, Prim's, and Dijkstra's algorithms
-- **Route Calculator**: Calculate optimal paths between nodes
-- **Graph Builder**: Create custom graphs with nodes, edges, and traffic conditions
-- **Graph Templates**: Quick-load common network topologies (Grid, Tree, Complete, Bipartite, Star)
-- **Performance Benchmarking**: Measure and compare algorithm execution times
-- **Graph Metrics**: Analyze degree distribution, clustering coefficient, and betweenness centrality
-- **Interactive Tutorial**: Step-by-step guide to using the system
-- **Import/Export**: Support for JSON and CSV file formats
+- **Phase 1 — Container & pipeline hardening:** complete
+- **Phase 2 — Advanced security hardening:** in progress
 
-## Technologies Used
+## Phase 1 — completed
 
-- React + TypeScript
-- Vite
-- Tailwind CSS
-- Three.js (3D Visualization)
-- Framer Motion (Animations)
-- Recharts (Data Visualization)
+- **Multi-stage Dockerfile** — `node:24-alpine3.20` build stage, `nginx:1.27-alpine3.20` runtime stage, with only the compiled `dist/` output and `nginx.conf` copied into the final image.
+- **Pinned base image versions** — no floating tags.
+- **Non-root container user** — runs as the built-in `nginx` user, not root.
+- **`.dockerignore`** — keeps `node_modules`, `.git`, `.env`, and docs out of the build context.
+- **OCI image labels** — `org.opencontainers.image.revision` / `.created`, injected at build time so any running image traces back to its exact commit and build timestamp.
+- **Health check** — an exact-match `/health` route in `nginx.conf`, backed by a Docker `HEALTHCHECK` polling every 30s.
+- **`docker-compose.yaml`** — for local dev/prod parity.
+- **Nginx security headers** — `server_tokens off`, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`.
+- **Hardened CI/CD pipeline** — all third-party GitHub Actions pinned to a full commit SHA; the image is built and health-verified *before* being pushed, so `:latest` on GHCR can never point at a build that failed its own health check. Images are tagged both `:latest` and `:<commit-sha>`.
 
--![Alt](https://repobeats.axiom.co/api/embed/a30bbe6fff62957b3cce362eef11556425224647.svg "Repobeats analytics image")
+## Phase 2 — in progress
 
+Completed so far:
+- **Dependabot** — weekly update PRs for both the `npm` and `github-actions` ecosystems.
+- **Trivy vulnerability scanning** — filesystem/dependency scan in CI, image scan before push in CD, both gating the pipeline on `CRITICAL`/`HIGH` findings. `trivy-action` is pinned by commit SHA rather than tag, in direct response to the March 2026 supply-chain tag-hijacking incident affecting that action.
+- **CodeQL static analysis (SAST)** — `security-extended` query pack, running on push/PR plus a weekly schedule, with results surfaced in the repo's Security tab.
 
+Not yet done:
+- Read-only root filesystem + dropped Linux capabilities at the container level.
+- SBOM generation (Syft) per image build.
+- Image signing / provenance verification (cosign/Sigstore).
+- Content-Security-Policy header.
 
-## Demo
-https://github.com/user-attachments/assets/316df9d7-7e5a-47f3-9cdd-c0bae09110ae
+## Also still pending
 
+- **Live deployment** (Part 4 of the original brief) — provisioning a real VPS, Certbot TLS, and firewall rules. No server has been provisioned yet; the SSH deploy step in `deploy.yml` is written but commented out until one exists.
 
-## Course Information
-
-- **Course**: Data Structures and Algorithms
-- **Class**: BSE-3(B)
-- **University**: Bahria University, Karachi Campus
-- **Course Instructor**: Engr. Majid Kalim
-- **Lab Instructor**: Engr. Saniya Sarim
-
-## Getting Started
+## Running it
 
 ```bash
-# Install dependencies
+# Local dev (underlying app)
 npm install
-
-# Start development server
 npm run dev
-
-# Build for production
-npm run build
 ```
 
-## License
+```bash
+# Plain Docker
+docker build \
+  --build-arg REVISION=$(git rev-parse HEAD) \
+  --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+  -t stans-app .
 
-This project is developed as part of the Data Structures and Algorithms course at Bahria University.
+docker run -d --name stans-app -p 8080:80 stans-app
+```
+
+```bash
+# Docker Compose
+docker compose up -d --build
+docker compose ps   # confirm (healthy) status
+```
